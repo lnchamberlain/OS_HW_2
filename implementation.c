@@ -163,7 +163,7 @@ typedef struct node{
 node *head = NULL;
 /*Begin ordered list functions */
 
-void remove_node(node* node){
+void removeNode(node* node){
   if(node->prev == NULL){
     if(node->next){
       //If node has no previous but has a next, update pointer to head
@@ -181,7 +181,7 @@ void remove_node(node* node){
     }
     //Do we need to call free here?
 }
-  void insert_node(node *node){
+  void insertNode(node *node){
     node->prev = NULL;
     node->next = NULL;
     //If empty list or if address of node is less than address of current head, set head to node
@@ -204,8 +204,33 @@ void remove_node(node* node){
       currentNode->next = node;
     }
   }
+  /*mergeBlocks iterates over the ordered list and looks to see if any of the blocks are consecutive, and if they are, merge them into one large block */ 
+  void mergeBlocks(){
+    node* currentNode = head;
+    long long currentAddress, nextAddress;
+    while(currentNode->next){
+      currentAddress = (long long)currentNode;
+      nextAddress = (long long) currentNode->next;
+      //As each node is of type node, they have a header with that node variables that is of size sizeof(node). This must be added to the sizes of each node to account for this information
+      
+      //To see if consecutive, start at currentAddress, add the size of the current node, and then add the size of the node type to get to the next block. 
+      if(currentAddress + currentNode->size + sizeof(node) == nextAddress){
+	//Here the two nodes are consecutive
+	//Update size by adding the length of next node + the size of the type node
+	currentNode->size += currentNode->next->size + sizeof(node);
+	currentNode->next = currentNode->next->next;
+	//If not at end of list, update prev pointer
+	if(currentNode->next){
+	  currentNode->next->prev = currentNode;
+	}
+	else{
+	  break;
+	}
+      }
+      currentNode = currentNode->next;
+    }
 
- 
+  }
 
 /* End of your helper functions */
 
