@@ -244,16 +244,20 @@ void *__malloc_impl(size_t size) {
   /* STUB */  
   int m = 1;
   // size_t temp = size;
+  
+  // Determine the number of nodes demanded for the given size.
   while (size >= SPACE*m) {
 	  m++;
   }
   
+  // Loop to remove nodes from the List of free space.
   int i;
   for (i=0; i < m; i++) {
-	  removeNode(head);
+	  // Break if head is NULL; More should probably be done to handle this.
 	  if (head == NULL) {
 		  break;
 	  }
+	  removeNode(head);
   }
   
   
@@ -262,6 +266,28 @@ void *__malloc_impl(size_t size) {
 
 void *__calloc_impl(size_t nmemb, size_t size) {
   /* STUB */
+  // compute total space needed by multiplying the number of elements by the size of an element.
+  size_t totalSpace = nmeb * size;
+  int m = 1;
+  
+  // Check for overflow and return error if it occurs.
+  if (totalSpace < 0) {
+	  return NULL;
+  }
+  
+  while (totalSpace >= SPACE*m) {
+	  m++;
+  }
+  
+  int i;
+  for (i = 0; i < m; i++) {
+	  if (head == NULL) {
+		  break;
+	  }
+	  
+	  removeNode(head);
+  }
+  
   return NULL;  
 }
 
