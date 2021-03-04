@@ -275,7 +275,11 @@ void *__calloc_impl(size_t nmemb, size_t size) {
 	  return NULL;
   }
   
-  while (totalSpace >= SPACE*m) {
+  // We should just need to call malloc.
+  
+  _malloc_impl(totalSpace);
+  
+/*   while (totalSpace >= SPACE*m) {
 	  m++;
   }
   
@@ -286,7 +290,7 @@ void *__calloc_impl(size_t nmemb, size_t size) {
 	  }
 	  
 	  removeNode(head);
-  }
+  } */
   
   return NULL;  
 }
