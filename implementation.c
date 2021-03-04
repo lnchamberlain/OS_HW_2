@@ -53,6 +53,8 @@
 #include <stddef.h>
 #include <sys/mman.h>
 
+#define SPACE 1600000
+
 /* Predefined helper functions */
 
 static void *__memset(void *s, int c, size_t n) {
@@ -102,7 +104,7 @@ static int __try_size_t_multiply(size_t *c, size_t a, size_t b) {
 
   /* If any of the arguments a and b is zero, everthing works just fine. */
   if ((a == ((size_t) 0)) ||
-      (a == ((size_t) 0))) {
+      (b == ((size_t) 0))) {
     *c = a * b;
     return 1;
   }
@@ -239,7 +241,22 @@ void removeNode(node* node){
 void __free_impl(void *);
 
 void *__malloc_impl(size_t size) {
-  /* STUB */
+  /* STUB */  
+  int m = 1;
+  // size_t temp = size;
+  while (size >= SPACE*m) {
+	  m++;
+  }
+  
+  int i;
+  for (i=0; i < m; i++) {
+	  removeNode(head);
+	  if (head == NULL) {
+		  break;
+	  }
+  }
+  
+  
   return NULL;
 }
 
@@ -255,6 +272,9 @@ void *__realloc_impl(void *ptr, size_t size) {
 
 void __free_impl(void *ptr) {
   /* STUB */
+  void *p = mmap(NULL, SPACE, PROT_READ | PROT_WRITE, -1, 0);
+  
+  insertNode(p);
 }
 
 /* End of the actual malloc/calloc/realloc/free functions */
