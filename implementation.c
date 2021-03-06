@@ -268,7 +268,7 @@ void *__calloc_impl(size_t nmemb, size_t size) {
   /* STUB */
   // compute total space needed by multiplying the number of elements by the size of an element.
   size_t totalSpace = nmeb * size;
-  int m = 1;
+  // int m = 1;
   
   // Check for overflow and return error if it occurs.
   if (totalSpace < 0) {
