@@ -284,6 +284,24 @@ void removeNode(node* node){
 	  }
   }
   
+  // basic removal function
+  void removeBN(blockNode *bn) {
+	  if (blockHead == NULL) {
+		  return;
+	  }
+	  
+	  blockNode *curr = blockHead;
+	  while (curr->next) {
+		  if (curr->next == bn) {
+			  curr->next = bn->next;
+			  break;
+		  }
+		  else {
+			  curr = curr->next;
+		  }
+	  }
+  }
+  
   // This will get the size by comparing the address stored in the node to the pointer passed.
   size_t getBlockSize(void *ptr) {
 	  blockNode *curr = blockHead;
