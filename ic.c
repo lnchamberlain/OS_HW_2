@@ -388,7 +388,8 @@ void *__realloc_impl(void *ptr, size_t size) {
   __memcpy(ptr, newptr, size);
   __free_impl(ptr);
   
-  return NULL;  
+  return newptr;
+  // return NULL;  
 }
 
  void __free_impl(void *ptr){
