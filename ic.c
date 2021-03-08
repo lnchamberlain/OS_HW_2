@@ -385,7 +385,18 @@ void *__realloc_impl(void *ptr, size_t size) {
   /* STUB */
   
   void *newptr = __malloc_impl(size);
-  __memcpy(ptr, newptr, size);
+  
+  // get the size of the old block
+  size_t oldSize = searchList(ptr);
+  
+  // Copy the full size of the old block if it is smaller than the size value passed,
+  // otherwise use the argument.
+  if (oldSize < size) {
+	  memcpy(ptr, newptr, oldSize)
+  }
+  else {
+	__memcpy(ptr, newptr, size);
+  }
   __free_impl(ptr);
   
   return newptr;
