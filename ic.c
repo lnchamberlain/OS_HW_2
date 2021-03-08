@@ -271,7 +271,6 @@ void removeNode(node* node){
 	  // basic insertion for linked lists
 	  if (blockHead == NULL) {
 		  blockHead = bn;
-		  bn->next = NULL;
 	  }
 	  else {
 		  blockNode *curr = blockHead;
@@ -282,6 +281,7 @@ void removeNode(node* node){
 		  
 		  curr->next = bn;
 	  }
+	  bn->next = NULL;
   }
   
   // basic removal function
@@ -306,7 +306,7 @@ void removeNode(node* node){
   size_t getBlockSize(void *ptr) {
 	  blockNode *curr = blockHead;
 	  
-	  while (curr->next) {
+	  while (curr) {
 		  // compare the address in the node to ptr, deciding on how they should be checked for equivalence.
 		  if (curr->addr == ptr) {
 			  return curr->size;
