@@ -383,8 +383,11 @@ void *__calloc_impl(size_t nmemb, size_t size) {
 
 void *__realloc_impl(void *ptr, size_t size) {
   /* STUB */
+  
+  void *newptr = __malloc_impl(size);
+  __memcpy(ptr, newptr, size);
   __free_impl(ptr);
-  ptr = __malloc_impl(size);
+  
   return NULL;  
 }
 
