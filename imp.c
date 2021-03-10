@@ -141,7 +141,7 @@ typedef struct node{
 
 typedef struct blockNode {
 	size_t size;
-	long long addr;
+        void *addr;
 	struct blockNode *next;
 }blockNode;
 
@@ -274,22 +274,23 @@ void removeNode(node* node){
     void *p = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, -1, 0);
     printf("Hello there I am now in createBlock, p is %p\n", &p);
 	// adding an item to the BN list with data used in mmap.
-    node *nodeTest;
-    blockNode *bn;
-    printf("Block node has been created, bn is %p\n", &bn);
+
     
-    //SEGFAULT OCCURS BELOW
-
-
-    bn->addr = (long long)&p;
-    printf("bn addr is %ll\n", bn->addr);
+    //TODO CHANGE BELOW TO __MALLOC_IMPL once it works
+    blockNode *bn = malloc(sizeof(blockNode));
+    node *newNode = malloc(sizeof(node));
+    
+    printf("Block node has been created, bn is %p\n", &bn);
+    //Account for size of node header, not blockNode header as node will be used for comparison later
+    bn->addr = &p - sizeof(node);
+    printf("bn addr is %p\n", bn->addr);
     bn->size = size;
+    printf("bn size is %x\n", bn->size);
     insertBN(bn);
     //Add the free space to the LL
     //Might get an overflow when computing space
     int overflowCatch = 0;
     if(p != NULL){
-      node *newNode;
       //Space must be a multiple of sizeof(node) so there won't be any errors adding or deleting nodes 
       size_t s = sizeof(node);
       for(int i = 0; 1; i++){
@@ -383,14 +384,11 @@ void *__malloc_impl(size_t size) {
     return NULL;
   }
   void *ptr = searchList(sizeofBlock);
-  if(ptr){
-    printf("Pointer is %ll\n", ptr);
-  }
   printf("I am back in malloc\n");
   //Found a block large enough to hold the requested size
   if(ptr != NULL){
     //again account for size of header
-    void* startofFreeBlock = ptr + sizeof(node);
+    void* startofFreeBlock = ptr - sizeof(node);
     //ptr has been allocated and so remove from list
     removeNode(ptr);
     return startofFreeBlock;
@@ -402,7 +400,7 @@ void *__malloc_impl(size_t size) {
   //Found a block large enough to hold the requested size
   if(ptr != NULL){
     //again account for size of header
-    void* startofFreeBlock = ptr + sizeof(node);
+    void* startofFreeBlock = ptr - sizeof(node);
     //ptr has been allocated and so remove from list
     removeNode(ptr);
     return startofFreeBlock;
@@ -460,14 +458,18 @@ void *__realloc_impl(void *ptr, size_t size) {
 }
 
  void __free_impl(void *ptr){
-   node *freeBlock;
+   //TODO Change this once __malloc_impl works!!!
+   node *freeBlock = malloc(sizeof(node));
    //Handle case free(nil)
+
+   
    if(ptr == NULL){
      return;
    }
    size_t size = getBlockSize(ptr);
+   printf("Get block size is %x \n", size);
    freeBlock->size = size;
-   freeBlock->addr = ptr - sizeof(node);
+   freeBlock->addr = &ptr - sizeof(node);
    insertNode(freeBlock);
    //After inserting new node, call mergeBlocks in case new node is consecutive and can be condensed
    mergeBlocks();
@@ -477,17 +479,30 @@ void *__realloc_impl(void *ptr, size_t size) {
  void printLists(){
    node*curr = head;
    blockNode* currBN = blockHead;
-   int i = 1;
-   while(curr->next){
-     printf("List has &d items. Current node is at &ll of size &x \n", i, (long long) curr, curr->size);
+   int i;
+   if(head == NULL){
+     printf("List one is empty\n");
+   }
+   else{
+     i = 1;
+     printf("List has %d items. Current node is at %p of size %x \n", i, curr, curr->size);
+     while(curr->next){
+     printf("List has %d items. Current node is at %p of size %x \n", i, curr, curr->size);
      i++;
      curr = curr->next;
    }
+   }
+   if(blockHead == NULL){
+     printf("List two is empty\n");
+   }
+   else{
    i= 1;
-   while(currBN->next){
-     printf("BN has &d items. Current node is at &ll and of size &x \n", i, (long long) currBN, currBN->size);
+   printf("BN has %d items. Current node is at %p and of size %x \n", i, currBN, currBN->size);
+   while(currBN->next != NULL){
+     printf("BN has %d items. Current node is at %p and of size %x \n", i, currBN, currBN->size);
      i++;
      currBN = currBN->next;
+   }
    }
  }
 
@@ -495,16 +510,19 @@ void *__realloc_impl(void *ptr, size_t size) {
 int main(int argc, char **argv){
   char *ptrTest;
   int i;
+  printLists();
   ptrTest = __malloc_impl(SIZE);
+  printLists();
   /*
   for(i = 0; i < SIZE; ++i){
     ptrTest = __malloc_impl(SIZE);
     //printLists();
   }
+  */
   printf("End of malloc\n");
   __free_impl(ptrTest);
-  //printLists();
-  */
+  printLists();
+  
   printf("Hello world");
   return 0;
 }
