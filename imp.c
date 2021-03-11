@@ -142,8 +142,9 @@ typedef struct node{
 typedef struct blockNode {
 	size_t size;
         void *addr;
+  int beenFreed;
 	struct blockNode *next;
-}blockNode;
+  }blockNode;
 
 node *head = NULL;
 blockNode *blockHead = NULL;
@@ -224,6 +225,7 @@ void removeNode(node* node){
 
   }
    // checks if every address in both lists are equal
+/*
   int areNodesEqual() {
 
 	  // return False if one of the heads is NULL while the other is not.
@@ -252,6 +254,7 @@ void removeNode(node* node){
 
 	  return 0;
   }
+*/
 
   node* searchList(size_t size){
      node *temp = head;
@@ -286,6 +289,8 @@ void removeNode(node* node){
     printf("bn addr is %p\n", bn->addr);
     bn->size = size;
     printf("bn size is %x\n", bn->size);
+    //Allocated but not freed, set beenFreed to false
+    bn->beenFreed = 0;
     insertBN(bn);
     //Add the free space to the LL
     //Might get an overflow when computing space
@@ -354,10 +359,18 @@ void removeNode(node* node){
   // This will get the size by comparing the address stored in the node to the pointer passed.
   size_t getBlockSize(void *ptr) {
   blockNode *curr = blockHead;
-  while (curr) {
+  //For some reason we need to account for the added int?
+  ptr -= 8;
+  //void * newptr = ptr - 8;
+  //printf("ptr is %p, newptr is %p\n", ptr, newptr);
+  //ptr += (size_t) 2;
+  printf("I am in getBlockSize, ptr is %p \n", ptr);
+  while (curr != NULL) {
   // compare the address in the node to ptr, deciding on how they should be checked for equivalence.
-    if (curr->addr == ptr) {
-			  return curr->size;
+    printf("Curr is %p \n", curr);
+    if (curr == ptr) {
+      curr->beenFreed = 1;
+      return curr->size;
 		  }
 		  curr = curr->next;
 	  }
@@ -485,8 +498,8 @@ void *__realloc_impl(void *ptr, size_t size) {
    }
    else{
      i = 1;
-     printf("List has %d items. Current node is at %p of size %x \n", i, curr, curr->size);
-     while(curr->next){
+     //printf("List has %d items. Current node is at %p of size %x \n", i, curr, curr->size);
+     while(curr != NULL){
      printf("List has %d items. Current node is at %p of size %x \n", i, curr, curr->size);
      i++;
      curr = curr->next;
@@ -497,9 +510,9 @@ void *__realloc_impl(void *ptr, size_t size) {
    }
    else{
    i= 1;
-   printf("BN has %d items. Current node is at %p and of size %x \n", i, currBN, currBN->size);
-   while(currBN->next != NULL){
-     printf("BN has %d items. Current node is at %p and of size %x \n", i, currBN, currBN->size);
+   //printf("BN has %d items. Current node is at %p and of size %x \n", i, currBN, currBN->size);
+   while(currBN != NULL){
+     printf("BN has %d items. Current node is at %p and of size %x, been freed is %d\n", i, currBN, currBN->size, currBN->beenFreed);
      i++;
      currBN = currBN->next;
    }
@@ -508,21 +521,20 @@ void *__realloc_impl(void *ptr, size_t size) {
 
 #define SIZE (16)
 int main(int argc, char **argv){
-  char *ptrTest;
+  char *ptrTest1, *ptrTest2, *ptrTest3, *ptrTest4;
   int i;
+  ptrTest1 = __malloc_impl(SIZE);
+  ptrTest2 = __malloc_impl(10);
+  ptrTest3 = __malloc_impl(SIZE -(size_t) 2);
+  ptrTest4 = __malloc_impl(16000);
   printLists();
-  ptrTest = __malloc_impl(SIZE);
-  printLists();
-  /*
-  for(i = 0; i < SIZE; ++i){
-    ptrTest = __malloc_impl(SIZE);
-    //printLists();
-  }
-  */
   printf("End of malloc\n");
-  __free_impl(ptrTest);
+  __free_impl(ptrTest1);
+  __free_impl(ptrTest2);
+  __free_impl(ptrTest3);
   printLists();
-  
-  printf("Hello world");
+  printf("Testing freeing last node: \n");
+  __free_impl(ptrTest4);
+  printLists();
   return 0;
 }
