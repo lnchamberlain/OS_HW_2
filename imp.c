@@ -178,7 +178,7 @@ void removeNode(node* node){
     node->prev = NULL;
     node->next = NULL;
     //If empty list or if address of node is less than address of current head, set head to node
-    if((head == NULL) || (long long) head > (long long)node){
+    if((head == NULL) || &head > &node){
       if(head){
 	head->prev = node;
       }
@@ -188,7 +188,7 @@ void removeNode(node* node){
     else{
       curr = head;
       //Iterate over list until either the end is hit or the address of node is greater than currentNode
-      while((curr->next) && (long long)curr->next < (long long)curr){
+      while((curr->next) && &curr->next < &curr){
 	curr = curr->next;
       }
       //Update pointers, node is inserted after currentNode
@@ -202,8 +202,8 @@ void removeNode(node* node){
     node* currentNode = head;
     long long currentAddress, nextAddress;
     while(currentNode->next){
-      currentAddress = (long long)currentNode;
-      nextAddress = (long long) currentNode->next;
+      currentAddress = &currentNode;
+      nextAddress = &currentNode->next;
       //As each node is of type node, they have a header with that node variables that is of size sizeof(node). This must be added to the sizes of each node to account for this information
       
       //To see if consecutive, start at currentAddress, add the size of the current node, and then add the size of the node type to get to the next block. 
@@ -377,6 +377,42 @@ void removeNode(node* node){
 	  
 	  return NULL;
   }
+void munMapBlocks(){
+  printf("All nodes have been freed, in munMapBlocks()\n");
+  blockNode *curr = blockHead;
+  blockNode *next = curr;
+  int i = 1;
+  while(curr != NULL){
+    //next = curr->next;
+    printf("unmapping block number %d, at address %p of size %x\n", i, curr, curr->size);
+    if(munmap(curr->addr, curr->size - sizeof(node)) < 0){
+      
+      printf(stderr,"Error munmapping: %s\n", strerror(errno));
+      return;
+    }
+    curr = next;
+    next = curr->next;
+    i++;
+  }
+}
+void unMapCheck(){
+  blockNode *curr = blockHead;
+  while(curr != NULL){
+    if(curr->beenFreed == 0){
+      printf("Not all blocks have been freed\n");
+      return;
+    }
+    curr = curr->next;
+  }
+  //If we make it to here, every node has been freed, call munMapBlocks
+  munMapBlocks();
+}
+    
+  /*
+if(unmapMemory(mappedFile, fileLength) < 0){
+      return 1;
+    }
+  */
 /* End of your helper functions */
 
 /* Start of the actual malloc/calloc/realloc/free functions */
@@ -484,6 +520,7 @@ void *__realloc_impl(void *ptr, size_t size) {
    freeBlock->size = size;
    freeBlock->addr = &ptr - sizeof(node);
    insertNode(freeBlock);
+   unMapCheck();
    //After inserting new node, call mergeBlocks in case new node is consecutive and can be condensed
    mergeBlocks();
 }
